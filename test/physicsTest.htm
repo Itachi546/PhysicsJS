@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Physics</title>
+    <style>
+        .heading
+        {
+            margin:0px;
+            margin-bottom: 10px;
+        }
+        .ui
+        {
+            padding:8px;
+            position: absolute;
+            top:10px;
+            left:810px;
+            color:#CCC;
+            background-color: #222;
+            outline:2px solid black;
+        }
+        
+    </style>
+</head>
+<body>
+    <div>
+        <canvas id="canvas"></canvas>
+        <div class = "ui">
+            <h3 class = "heading">Scene</h3>
+            <select id="scene">
+                <option value="friction">Friction</option>
+                <option value="bridge">Bridge</option>
+                <option value="pendulum">Pendulum</option>
+              </select>
+        </div>
+    </div>
+    
+    <script src="../math/math.js"></script>
+    <script src="../physics/body.js"></script>
+    <script src="../physics/joint.js"></script>
+    <script src="../physics/manifold.js"></script>
+    <script src="../physics/collide.js"></script>
+    <script src="../physics/physics.js"></script>
+    <script src="physicsTest.js"></script>
+</body>
+</html>
