@@ -10,9 +10,16 @@ let ctx = canvas.getContext("2d");
 let timeStep = 1.0 / 60.0;
 let physicSystem;
 let bodies = [];
+let showContacts = false;
 
 let selectionMenu = document.getElementById("scene");
+let contactVisibilityCheckbox = document.getElementById("showContacts");
 let id = [];
+
+contactVisibilityCheckbox.oninput = function(evt)
+{
+    showContacts = evt.target.checked;
+}
 
 selectionMenu.oninput = function(evt)
 {
@@ -168,8 +175,6 @@ function bridgeScene() {
 
 function setup() {
     physicSystem = new PhysicsSystem(new vec2(0.0, 98));
-    //bridgeScene();    
-    //pendulumScene();
     frictionScene();
     update();
 }
@@ -185,7 +190,8 @@ function update() {
     }
 
     physicSystem.drawJoint(ctx);
-    //physicSystem.drawManifolds(ctx);
+    if(showContacts)
+        physicSystem.drawManifolds(ctx);
 
     requestAnimationFrame(update);
 }
