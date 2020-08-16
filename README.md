@@ -4,10 +4,10 @@ Learning 2D Collision and Rigid body physics using Javascript
 <br>
 
 ### Collision Test
-![Scene1](images/image1.png)
+![Scene1](images/image1.PNG)
 
 ### Joint
-![Joint](images/image2.png)
+![Joint](images/image2.PNG)
 
 ### Pendulum
 ![Pendulum](images/image3.png)
