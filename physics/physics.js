@@ -68,14 +68,18 @@ class PhysicsSystem {
                 let bodyA = bodies[i];
                 let bodyB = bodies[j];
 
+                // @TODO uncomment it later
                 if(bodyA.inverseMass === 0 && bodyB.inverseMass === 0)
                     continue;
                 
                 let shapeAType = bodyA.shape.type;
                 let shapeBType = bodyB.shape.type;
                 
+
                 let intersect = false;
                 let manifold = new Manifold(bodyA, bodyB);
+                
+                let contactCoherence = true;
 
                 if (shapeAType === ShapeType.POLYGON && shapeBType === ShapeType.POLYGON) {
                     intersect = BoxBoxCollision(bodyA, bodyB, manifold);
@@ -93,15 +97,38 @@ class PhysicsSystem {
                     manifold.swapBodies();
                     intersect = BoxCircleCollision(bodyB, bodyA, manifold);
                 }
+                else if (shapeAType === ShapeType.CIRCLE && shapeBType === ShapeType.EDGE) 
+                {
+                    //No contact coherence for circle and edge
+                    // This cause instability if two points on edge are very close
+                    // less than the threshold
 
+                    intersect = CircleEdgeCollision(bodyA, bodyB, manifold);
+                    contactCoherence = false;
+                }
+                else if (shapeAType === ShapeType.EDGE && shapeBType === ShapeType.CIRCLE) 
+                {
+                    manifold.swapBodies();
+                    intersect = CircleEdgeCollision(bodyB, bodyA, manifold);
+                    contactCoherence = false;
+                }
+                
                 // Check for existing manifold
                 let found = this.findManifold(manifold.a, manifold.b);
+                if(!contactCoherence)
+                {
+                    if(found !== -1)
+                        this.manifolds.splice(found, 1);
+                    found = -1;
+                }
+
                 if (intersect) 
                 {
                     if (found !== -1) {
                         this.manifolds[found].update(manifold.contacts);
                     }
-                    else {
+                    else 
+                    {
                         this.manifolds.push(manifold);
                     }
                 }

@@ -1,7 +1,8 @@
 const ShapeType = 
 {
     CIRCLE: "circle",
-    POLYGON: "polygon"
+    POLYGON: "polygon",
+    EDGE : "edge"
 };
 
 class CircleShape
@@ -43,5 +44,19 @@ class PolygonShape
             vertices.push(position.add(rotate.multiplyVec(this.vertices[i]), orientation));
         }
         return vertices;
+    }
+}
+
+class EdgeShape
+{
+    constructor()
+    {
+        this.vertices = [];
+    }
+
+    // Currently insert by sorting it in increasing x direction
+    addVertex(vertex)
+    {
+        this.vertices.push(vertex);
     }
 }
