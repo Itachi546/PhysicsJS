@@ -123,8 +123,8 @@ class PhysicsSystem {
 
     drawJoint() {
         for (let i = 0; i < this.constraints.length; ++i) {
-            let start = this.constraints[i].a.position;
-            let end = this.constraints[i].b.position;
+            let start = this.constraints[i].a.position.add(this.constraints[i].r1);
+            let end = this.constraints[i].b.position.add(this.constraints[i].r2);
             DrawLine(start, end);
         }
     }

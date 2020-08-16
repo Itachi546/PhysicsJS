@@ -12,6 +12,7 @@ let bodies = [];
 let showContacts = false;
 
 let selectionMenu = document.getElementById("scene");
+
 let contactVisibilityCheckbox = document.getElementById("showContacts");
 let id = [];
 
@@ -122,17 +123,15 @@ function drawBody(body)
 window.onmousedown = function (evt) {
     if (evt.button === 0) {
         let position = new vec2(evt.clientX, evt.clientY);
-        let size = new vec2(20, 20);
-        if(Math.random() > 1.)
+        if(Math.random() > 0.5)
         {
             
-            let size = new vec2(5.0 + Math.random() * 10., 5.0 + Math.random() * 10.);
-            let area = size.x * size.y;
+            let size = new vec2(10.0 + Math.random() * 10., 10.0 + Math.random() * 10.);
             createBox(position, size, 1.0, 0.0);
         }
         else
         {
-            let radius = 5.0 + Math.random() * 10.;
+            let radius = 10.0 + Math.random() * 10.;
             createCircle(position, radius, 1.0, 0.0);
         }
     }
@@ -150,7 +149,7 @@ function pendulumScene() {
     a = createBox(new vec2(width * 0.5, height * 0.1), new vec2(20, 5), 0.0, 0.0);
     b = createBox(new vec2(width * 0.0, height * 0.1), new vec2(20, 20), 0.25, 0.0);
 
-    let joint = new DistanceJoint(a, b, a.position);
+    let joint = new DistanceJoint(a, b, a.position, b.position.add(new vec2(20.0, 20.0)));
     physicSystem.addConstraints(joint);
 }
 
@@ -158,7 +157,6 @@ function frictionScene() {
     createBox(new vec2(width * 0.5, height), new vec2(width * 0.5, height * 0.05), 0.0, 0.0);
     createBox(new vec2(width * 0.35, height * 0.25), new vec2(200, 10), 0.0, 0.38);
     createBox(new vec2(width * 0.75, height * 0.45), new vec2(200, 10), 0.0, -0.38);
-
 
     let a = createBox(new vec2(width * 0.15, height * 0.0), new vec2(10., 10.0), 4.0, 0);
     a.friction = 0.0;
@@ -177,6 +175,10 @@ function frictionScene() {
         }
     }
 
+    let c = createCircle(new vec2(width * 0.75, height * 0.0), 10.0, 4.0, 0);
+    let d = createCircle(new vec2(width * 0.82, height * 0.0), 20.0, 4.0, 0);
+    let joint = new DistanceJoint(c, d, c.position, d.position);
+    physicSystem.addConstraints(joint);
     createObjects();
 }
 
@@ -195,7 +197,8 @@ function bridgeScene() {
         if (i === numBody - 1)
             invMass = 0.0;
         let b = createBox(new vec2(width * 0.1 + xOffset * (i + 1), yPos), new vec2(20, 10), invMass, 0.0);
-        let joint = new DistanceJoint(start, b, start.position);
+        let anchorPoint = start.position.add(new vec2(20.0, 0.0));
+        let joint = new DistanceJoint(start, b, anchorPoint, anchorPoint);
         physicSystem.addConstraints(joint);
         start = b;
     }

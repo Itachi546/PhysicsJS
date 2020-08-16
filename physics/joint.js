@@ -1,13 +1,13 @@
 class DistanceJoint
 {
-    constructor(a, b, anchorPoint)
+    constructor(a, b, anchorPointA, anchorPointB)
     {
         this.a = a;
         this.b = b;
-        this.anchorPoint = anchorPoint;
 
-        this.anchorA = this.anchorPoint.subtract(this.a.position);
-        this.anchorB = this.anchorPoint.subtract(this.b.position);
+        // Convert anchor to local space
+        this.localAnchorA = mat2.rotate(-a.orientation).multiplyVec(anchorPointA.subtract(this.a.position));
+        this.localAnchorB = mat2.rotate(-b.orientation).multiplyVec(anchorPointB.subtract(this.b.position));
 
         //this.softness = 0.0;
         this.biasFactor = 0.2;
@@ -17,23 +17,26 @@ class DistanceJoint
 
         this.constraintMass = 0.0;
 
-        this.distance = vec2.length(this.b.position.subtract(this.a.position));
+        this.distance = vec2.length(anchorPointB.subtract(anchorPointA));
     }
 
     preStep(invDt)
     {
-        this.normal = this.b.position.subtract(this.a.position);
-        let newDist = vec2.length(this.normal);
-        this.normal = vec2.normalize(this.normal);
-
         let rotateA = mat2.rotate(this.a.orientation);
-        this.r1 = rotateA.multiplyVec(this.anchorA);
+        this.r1 = rotateA.multiplyVec(this.localAnchorA);
         
         let rotateB = mat2.rotate(this.b.orientation);
-        this.r2 = rotateB.multiplyVec(this.anchorB);
+        this.r2 = rotateB.multiplyVec(this.localAnchorB);
 
-        let rn1 = vec2.cross(this.normal, this.r1);
-        let rn2 = vec2.cross(this.normal, this.r2);
+        let globalA = this.a.position.add(this.r1);
+        let globalB = this.b.position.add(this.r2);
+        this.normal = globalB.subtract(globalA);
+        let newDist = vec2.length(this.normal);
+        this.normal = vec2.normalize(this.normal);
+        
+
+        let rn1 = vec2.cross(this.r1, this.normal);
+        let rn2 = vec2.cross(this.r2, this.normal);
 
         this.constraintMass = this.a.inverseMass + this.b.inverseMass + 
                               this.a.inverseInertia * rn1 * rn1 + this.b.inverseInertia * rn2 * rn2;
@@ -49,7 +52,8 @@ class DistanceJoint
 
         let dv = vb.subtract(va);
         let dvN = vec2.dot(dv, this.normal);
-        let Pn = this.normal.scale((-dvN + this.bias) / this.constraintMass);
+        let P = (-dvN + this.bias) / this.constraintMass;
+        let Pn = this.normal.scale(P);
         
         this.a.applyLinearImpulse(Pn.scale(-1));
         this.a.applyAngularImpulse(-vec2.cross(this.r1, Pn));
