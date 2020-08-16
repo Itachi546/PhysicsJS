@@ -1,57 +1,50 @@
-class PhysicsSystem
-{
-    constructor(gravity)
-    {
+class PhysicsSystem {
+    constructor(gravity) {
         this.gravity = gravity;
         this.bodies = [];
         this.manifolds = [];
         this.constraints = [];
     }
 
-    step(dt)
-    {
+    step(dt) {
         this.broadPhase();
-        
+
         let invDt = 1.0 / dt;
 
         this.integrateForce(dt);
-        
-        for(let i = 0; i < this.manifolds.length; ++i)
+
+        for (let i = 0; i < this.manifolds.length; ++i)
             this.manifolds[i].preStep(invDt);
 
-        for(let i = 0; i < this.constraints.length; ++i)
+        for (let i = 0; i < this.constraints.length; ++i)
             this.constraints[i].preStep(invDt);
-        
-        for(let j = 0; j < 5; ++j)
-        {
-            for(let i = 0; i < this.manifolds.length; ++i)
+
+        for (let j = 0; j < 5; ++j) {
+            for (let i = 0; i < this.manifolds.length; ++i)
                 this.manifolds[i].applyImpulse();
 
-            for(let i = 0; i < this.constraints.length; ++i)
+            for (let i = 0; i < this.constraints.length; ++i)
                 this.constraints[i].applyImpulse();
-       
+
         }
 
         this.integrateVelocity(dt);
     }
 
-    integrateForce(dt)
-    {
-        this.bodies.forEach((body)=>{
-            if(body.inverseMass > 0.0 && body.awake)
-            {
+    integrateForce(dt) {
+        this.bodies.forEach((body) => {
+            if (body.inverseMass > 0.0 && body.awake) {
                 let acceleration = body.force.scale(body.inverseMass);
                 body.velocity = body.velocity.add((acceleration.add(this.gravity)).scale(dt));
-                body.angularVelocity += body.torque * body.inverseInertia * dt;
+                const angularDamping = 0.0;
+                body.angularVelocity += body.torque * body.inverseInertia * dt - body.angularVelocity * angularDamping;
             }
         });
     }
 
-    integrateVelocity(dt)
-    {
-        this.bodies.forEach((body)=>{
-            if(body.inverseMass > 0.0 && body.awake)
-            {
+    integrateVelocity(dt) {
+        this.bodies.forEach((body) => {
+            if (body.inverseMass > 0.0 && body.awake) {
                 let velocity = body.velocity;
                 body.position = body.position.add(velocity.scale(dt));
 
@@ -61,115 +54,101 @@ class PhysicsSystem
         });
     }
 
-    addBody(body)
-    {
+    addBody(body) {
         this.bodies.push(body);
     }
 
-    addConstraints(c)
-    {
+    addConstraints(c) {
         this.constraints.push(c);
     }
 
-    broadPhase()
-    {
-        for(let i = 0; i < bodies.length; ++i)
-        {
-            for(let j = i + 1; j < bodies.length; ++j)
-            {
-                let manifold = new Manifold(bodies[i], bodies[j]);
-                let found = this.findManifold(bodies[i], bodies[j]);
-                if(BoxBoxCollision(bodies[i], bodies[j], manifold))
+    broadPhase() {
+        for (let i = 0; i < bodies.length; ++i) {
+            for (let j = i + 1; j < bodies.length; ++j) {
+                let bodyA = bodies[i];
+                let bodyB = bodies[j];
+
+                if(bodyA.inverseMass === 0 && bodyB.inverseMass === 0)
+                    continue;
+                
+                let shapeAType = bodyA.shape.type;
+                let shapeBType = bodyB.shape.type;
+                
+                let intersect = false;
+                let manifold = new Manifold(bodyA, bodyB);
+
+                if (shapeAType === ShapeType.POLYGON && shapeBType === ShapeType.POLYGON) {
+                    intersect = BoxBoxCollision(bodyA, bodyB, manifold);
+                }
+                else if (shapeAType === ShapeType.CIRCLE && shapeBType === ShapeType.CIRCLE) 
                 {
-                    if(found !== -1)
-                    {
+                    intersect = CircleCircleCollision(bodyA, bodyB, manifold);
+                }
+                else if (shapeAType === ShapeType.POLYGON && shapeBType === ShapeType.CIRCLE) 
+                {
+                    intersect = BoxCircleCollision(bodyA, bodyB, manifold);
+                }
+                else if (shapeAType === ShapeType.CIRCLE && shapeBType === ShapeType.POLYGON) 
+                {
+                    manifold.swapBodies();
+                    intersect = BoxCircleCollision(bodyB, bodyA, manifold);
+                }
+
+                // Check for existing manifold
+                let found = this.findManifold(manifold.a, manifold.b);
+                if (intersect) 
+                {
+                    if (found !== -1) {
                         this.manifolds[found].update(manifold.contacts);
                     }
-                    else
-                    {
+                    else {
                         this.manifolds.push(manifold);
                     }
                 }
-                else
+                else 
                 {
-                    if(found !== -1)
+                    if (found !== -1)
                         this.manifolds.splice(found, 1);
                 }
+                // end 
             }
         }
     }
 
-    clear()
-    {
+    clear() {
         this.constraints = [];
         this.bodies = [];
         this.manifolds = [];
     }
 
-    drawJoint(ctx)
-    {
-        for(let i = 0; i < this.constraints.length; ++i)
-        {
-            ctx.strokeStyle = "#fff"
-            ctx.beginPath();
+    drawJoint() {
+        for (let i = 0; i < this.constraints.length; ++i) {
             let start = this.constraints[i].a.position;
             let end = this.constraints[i].b.position;
-
-            ctx.moveTo(start.x, start.y);
-            ctx.lineTo(end.x, end.y);
-            ctx.closePath();
-            ctx.stroke();
-            /*
-            ctx.fillStyle = "#f00";
-            ctx.beginPath();
-            ctx.arc(start.x + rA.x, start.y + rA.y, 2.0, 0.0, Math.PI * 2.0);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.fillStyle = "#f00";
-            ctx.beginPath();
-            ctx.arc(end.x + rB.x, end.y + rB.y, 2.0, 0.0, Math.PI * 2.0);
-            ctx.closePath();
-            ctx.fill();
-            */
+            DrawLine(start, end);
         }
     }
-    drawManifolds(ctx)
-    {
-        for(let i = 0; i < this.manifolds.length; ++i)
-        {
+    
+    drawManifolds() {
+        for (let i = 0; i < this.manifolds.length; ++i) {
             let contacts = this.manifolds[i].contacts;
-            for(let i = 0; i < contacts.length; ++i)
-            {
+            for (let i = 0; i < contacts.length; ++i) {
                 let contact = contacts[i];
                 let start = contact.position;
                 let end = contact.position.add(contact.normal.scale(20.0));
 
-                ctx.fillStyle = "#00f";
-                ctx.beginPath();
-                ctx.arc(start.x, start.y, 4.0, 0.0, Math.PI * 2.0);
-                ctx.closePath();
-                ctx.fill();
-
-                ctx.strokeStyle = "#f00";
-                ctx.beginPath();
-                ctx.moveTo(start.x, start.y);
-                ctx.lineTo(end.x, end.y);
-                ctx.closePath();
-                ctx.stroke();
-
+                DrawPoint(start, "#00f")
+                DrawLine(start, end, "#f00");
             }
         }
     }
 
 
-    findManifold(a, b)
-    {
-        for(let i = 0; i < this.manifolds.length; ++i)
-        {
-            if(this.manifolds[i].a === a && this.manifolds[i].b === b)
+    findManifold(a, b) {
+        for (let i = 0; i < this.manifolds.length; ++i) {
+            if (this.manifolds[i].a === a && this.manifolds[i].b === b)
                 return i;
-            if(this.manifolds[i].a === b && this.manifolds[i].b === a)
+            if (this.manifolds[i].a === b && this.manifolds[i].b === a)
                 return i;
         }
         return -1;

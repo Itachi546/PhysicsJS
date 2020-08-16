@@ -1,4 +1,6 @@
-function generateVertices(body) {
+/*
+function generateVertices(body) 
+{
     let position = body.position;
     let dims = body.dims;
 
@@ -11,12 +13,55 @@ function generateVertices(body) {
     vertices.push(position.add(rotate.multiplyVec(new vec2(dims.x, dims.y), body.orientation)));
     return vertices;
 }
+*/
+
+function CircleCircleCollision(a, b, manifold)
+{
+    let normal = b.position.subtract(a.position);
+    let radiiSum = a.shape.radius + b.shape.radius;
+    let distSqr = vec2.lengthSquared(normal);
+    if(distSqr < radiiSum * radiiSum)
+    {
+        let dist = Math.sqrt(distSqr);
+        let penetration = radiiSum - dist;
+        normal = normal.scale(1.0 / dist);
+        let point = a.position.add(normal.scale(a.shape.radius));
+        manifold.addContact(point, normal, -penetration);
+        return true;
+    }
+    return false;
+}
+
+function BoxCircleCollision(a, b, manifold)
+{
+    let circlePosBoxSpace = b.position.subtract(a.position);
+    circlePosBoxSpace = mat2.rotate(-a.orientation).multiplyVec(circlePosBoxSpace);
+    
+    let dims = new vec2(a.shape.vertices[1].x - a.shape.vertices[0].x, a.shape.vertices[2].y - a.shape.vertices[1].y).scale(0.5);
+    let closestPoint = vec2.clamp(circlePosBoxSpace, dims.scale(-1), dims);
+
+    closestPoint = mat2.rotate(a.orientation).multiplyVec(closestPoint);
+    closestPoint = closestPoint.add(a.position);
+
+    let normal = b.position.subtract(closestPoint);
+    let lenSqr = vec2.lengthSquared(normal);
+    if(lenSqr < b.shape.radius * b.shape.radius)
+    {
+        let len = Math.sqrt(lenSqr);
+        let penetration = b.shape.radius - len;
+        normal = normal.scale(1.0 / len);
+        let point = b.position.subtract(normal.scale(b.shape.radius));
+        manifold.addContact(point, normal, -penetration);
+        return true;
+    }
+    return false;
+}
 
 function generateCollisionAxis(vertices, out_axis) {
     let tl = vertices[0];
     let tr = vertices[1];
-    let bl = vertices[2];
-    let br = vertices[3];
+    let br = vertices[2];
+    let bl = vertices[3];
 
     out_axis.push({ axis: vec2.normalize(tr.subtract(tl)), ptOnAxis: tr });
     out_axis.push({ axis: vec2.normalize(br.subtract(tr)), ptOnAxis: br });
@@ -54,22 +99,22 @@ function findIncidentReferenceFace(vertices, axes, normal)
     */
     if(bestAxis === 0)
     {
-        out_vertices.push(vertices[3]);
+        out_vertices.push(vertices[2]);
         out_vertices.push(vertices[1]);
         out_adjEdges.push(axes[3]);
         out_adjEdges.push(axes[1]);
     }
     else if(bestAxis === 1)
     {
-        out_vertices.push(vertices[2]);
         out_vertices.push(vertices[3]);
+        out_vertices.push(vertices[2]);
         out_adjEdges.push(axes[2]);
         out_adjEdges.push(axes[0]);
     }
     else if(bestAxis === 2)
     {
         out_vertices.push(vertices[0]);
-        out_vertices.push(vertices[2]);
+        out_vertices.push(vertices[3]);
         out_adjEdges.push(axes[3]);
         out_adjEdges.push(axes[1]);
     }
@@ -128,27 +173,10 @@ function lineIntersection(s1, e1, s2, e2) {
     return new vec2(x, y);
 }
 
-function CircleCircleCollision(a, b, manifold)
-{
-    let normal = b.position.subtract(a.position);
-    let radiiSum = a.dims.x + b.dims.x;
-    let distSqr = vec2.lengthSquared(normal);
-    if(distSqr < radiiSum * radiiSum)
-    {
-        let dist = Math.sqrt(distSqr);
-        let penetration = radiiSum - dist;
-        normal = normal.scale(1.0 / dist);
-        let point = a.position.add(normal.scale(a.dims.x));
-        manifold.addContact(point, normal, -penetration);
-        return true;
-    }
-    return false;
-}
-
 function BoxBoxCollision(a, b, manifold) {
-    let verticesA = generateVertices(a);
-    let verticesB = generateVertices(b);
-
+    let verticesA = a.shape.getVerticesWorld(a.position, a.orientation);
+    let verticesB = b.shape.getVerticesWorld(b.position, b.orientation);
+    
     let axesA = [];
     let axesB = [];
     generateCollisionAxis(verticesA, axesA);
@@ -183,6 +211,8 @@ function BoxBoxCollision(a, b, manifold) {
     }
 
     let ba = b.position.subtract(a.position);
+    if(ba.x === undefined || mtv === undefined)
+        return;
     if(vec2.dot(ba, mtv) < 0.0)
         mtv = mtv.scale(-1)
 

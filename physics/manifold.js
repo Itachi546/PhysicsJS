@@ -1,5 +1,5 @@
-let accumulateImpulse = true;
-let warmStarting = true;
+let accumulateImpulse = false;
+let warmStarting = false;
 
 class Contact 
 {
@@ -26,13 +26,19 @@ class Manifold {
         this.a = a;
         this.b = b;
         // @TODO temp
+        /*
         this.incFaceStart = new vec2(0.0, 0.0);
         this.incFaceEnd = new vec2(0.0, 0.0);
 
         this.refFaceStart = new vec2(0.0, 0.0);
         this.refFaceEnd = new vec2(0.0, 0.0);
-
+        */
         this.contacts = [];
+    }
+
+    swapBodies()
+    {
+        this.b = [this.a, this.a = this.b][0];
     }
 
     addContact(position, normal, penetration) {
@@ -154,8 +160,8 @@ class Manifold {
             let dvT = vec2.dot(dV, tangent);
             let dPt = contact.massTangent * (-dvT * (1.0 + e));
 
-            let friction = Math.sqrt(this.a.friction * this.b.friction);
-            
+            //let friction = Math.sqrt(this.a.friction * this.b.friction);
+            let friction = this.a.friction * this.b.friction;
             if(accumulateImpulse)
             {
                 let maxPt = friction * contact.Pn;

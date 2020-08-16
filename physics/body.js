@@ -1,15 +1,14 @@
 class Body
 {
-    constructor(position, dims, invMass, bodyType, color = "#fff")
+    constructor(position, invMass, color = "#fff")
     {
         this.position = position;
         this.velocity = new vec2(0.0, 0.0);
 
         this.force = new vec2(0.0, 0.0);
-        this.restitution = 0.2;
-        this.friction = 0.2;
+        this.restitution = 0.5;
+        this.friction = 0.5;
         this.inverseMass = invMass;
-        this.dims = dims;
 
         this.angularVelocity = 0.0;
         this.orientation = 0.0;
@@ -17,24 +16,24 @@ class Body
         this.inverseInertia = 0.0;
 
         this.color = color;
-        this.bodyType = bodyType;
 
+        this.shape = undefined;
+
+        // TODO to be implemented
         this.awake = true;
-
-        if(bodyType == "box")
-            this.initBox();
-        else
-            this.initCircle();
     }
 
-    initBox()
+    initBox(width, height)
     {
-        this.inverseInertia = 12.0 * this.inverseMass / (this.dims.x * this.dims.x + this.dims.y * this.dims.y);
+        this.shape = new PolygonShape();
+        this.shape.setAsBox(new vec2(width, height), this.orientation);
+        this.inverseInertia = 12.0 * this.inverseMass / (width * width + height * height);
     }
 
-    initCircle()
+    initCircle(radius)
     {
-        this.inverseInertia = this.inverseMass /(this.dims.x * this.dims.x);
+        this.shape = new CircleShape(radius);
+        this.inverseInertia = (2.0 * this.inverseMass) /(radius * radius);
     }
     
     clearForce()

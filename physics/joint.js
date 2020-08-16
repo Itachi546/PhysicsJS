@@ -9,7 +9,7 @@ class DistanceJoint
         this.anchorA = this.anchorPoint.subtract(this.a.position);
         this.anchorB = this.anchorPoint.subtract(this.b.position);
 
-        this.softness = 0.0;
+        //this.softness = 0.0;
         this.biasFactor = 0.2;
 
         this.r1 = new vec2(0.0, 0.0);
