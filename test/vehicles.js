@@ -2,10 +2,15 @@ let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext("2d");
 
 let timeStep = 1.0 / 60.0;
-let physicSystem;
+let physicSystem = new PhysicsSystem(new vec2(0.0, 98));
 let bodies = [];
-let showContacts = false;
 let tireA, tireB, tireC;
+let startPos;
+let xOffset = 80;
+let camOffset = new vec2(-100.0, -150.0);
+let amplitude = 2.0;
+let frequency = 1.0;
+let showVertex = false;
 
 function createCircle(position, radius, invMass, orientation) 
 {
@@ -17,6 +22,27 @@ function createCircle(position, radius, invMass, orientation)
     return body;
 }
 
+function getHeight(x)
+{
+    let y = Math.sin(x * 0.01 + 40) * 40.;
+    y += Math.sin(x * 0.05) * 10.0;
+    y += Math.cos(x) * 2.;
+    return y;
+}
+
+function updateEdge(edge)
+{
+    edge.vertices = [];
+    let numPoints = Math.ceil(canvas.width / xOffset + 200.0);
+    let phase = 0.0;
+    for(let i = 0; i  < numPoints; i++)
+    {
+        let x = i * xOffset + Math.floor(camOffset.x / xOffset) * xOffset + phase;
+        let y = getHeight(frequency * x) * amplitude;
+        edge.addVertex(new vec2(x, y));
+    }
+}
+
 function createEdge() 
 {
     let body = new Body(new vec2(0.0, 460.0), 0.0);
@@ -24,17 +50,7 @@ function createEdge()
     body.inverseInertia = 0.0;
 
     let edge = new EdgeShape();
-
-    let xOffset = 20;
-    let numPoints = Math.ceil(canvas.width / xOffset);
-    for(let i = 0; i  < numPoints; i++)
-    {
-        let x = i * xOffset;
-        let y = Math.sin(x * 0.01) * 40.;
-        y += Math.sin(x * 0.05) * 10.0;
-        y += Math.cos(x) * 2.;
-        edge.addVertex(new vec2(x, y));
-    }
+    updateEdge(edge);
     
     body.shape = edge;
     body.shape.type = ShapeType.EDGE;
@@ -46,11 +62,13 @@ function createEdge()
 function drawCircle(body)
 {
     let position = body.position;
+    let offset = camOffset.scale(-1);
+    
     let radius = body.shape.radius;
 
     ctx.beginPath();
     ctx.strokeStyle = body.color;
-    ctx.arc(position.x, position.y, radius, 0.0, Math.PI * 2.0);
+    ctx.arc(position.x + offset.x, position.y + offset.y, radius, 0.0, Math.PI * 2.0);
     ctx.closePath();
     ctx.stroke();
 
@@ -61,8 +79,8 @@ function drawCircle(body)
 
     ctx.beginPath();
     ctx.strokeStyle = body.color;
-    ctx.moveTo(position.x, position.y);
-    ctx.lineTo(position.x + end.x, position.y + end.y);
+    ctx.moveTo(position.x + offset.x, position.y + offset.y);
+    ctx.lineTo(position.x + end.x + offset.x, position.y + end.y + offset.y);
     ctx.closePath();
     ctx.stroke();
 }
@@ -72,27 +90,31 @@ function drawEdge(body)
     ctx.strokeStyle = body.color;
     let vertices = body.shape.vertices;
     let position = body.position;
+    let offset = camOffset.scale(-1);
     ctx.beginPath();
     
     let start = vertices[0];
     for(let i = 1; i < vertices.length; ++i)
     {
-        ctx.moveTo(position.x + start.x, position.y + start.y)
-        ctx.lineTo(position.x + vertices[i].x, position.y + vertices[i].y);
+        ctx.moveTo(position.x + start.x + offset.x, position.y + start.y + offset.y)
+        ctx.lineTo(position.x + vertices[i].x + offset.x, position.y + vertices[i].y + offset.y);
         start = vertices[i];
     }
     ctx.closePath();
     ctx.stroke();
 
-    ctx.fillStyle = "#f88";
-    let size = 4.0;
-    for(let i = 0; i < vertices.length; ++i)
+    if(showVertex)
     {
-        ctx.fillRect(position.x + vertices[i].x - size * 0.5, position.y + vertices[i].y - size * 0.5, size, size);
+        ctx.fillStyle = "#f88";
+        let size = 4.0;
+        for(let i = 0; i < vertices.length; ++i)
+        {
+            ctx.fillRect(position.x + vertices[i].x - size * 0.5 + offset.x, position.y + vertices[i].y - size * 0.5 + offset.y, size, size);
+        }
     }
 }
 
-window.onmousedown = function(evt)
+canvas.onmousedown = function(evt)
 {
     if(evt.button === 0)
         createCircle(new vec2(evt.clientX, evt.clientY), Math.random() * 10.0 + 10.0, 1.0, 0.0);
@@ -123,12 +145,23 @@ function drawBody(body)
         drawEdge(body);
 }
 
-function setup() {
-    physicSystem = new PhysicsSystem(new vec2(0.0, 98));
-    createEdge();
-    tireA = createCircle(new vec2(0, 300), 10, 1.0, 0.0);    
-    tireB = createCircle(new vec2(30, 300), 10, 1.0, 0.0);
-    tireC = createCircle(new vec2(15, 280), 10, 1.0, 0.0);
+function getPlayerPos()
+{
+    let sum = tireA.position.add(tireB.position);
+    sum = sum.add(tireC.position);
+    sum = sum.scale(0.333);
+    return sum;
+}
+
+let edge;
+function setup() 
+{
+    edge = createEdge();
+    tireA = createCircle(new vec2(220, 300), 10, 1.0, 0.0);    
+    tireB = createCircle(new vec2(250, 300), 10, 1.0, 0.0);
+    tireC = createCircle(new vec2(235, 280), 10, 1.0, 0.0);
+
+    startPos = getPlayerPos();
     let joint1 = new DistanceJoint(tireA, tireB, tireA.position, tireB.position);
     physicSystem.addConstraints(joint1);
     let joint2 = new DistanceJoint(tireA, tireC, tireA.position, tireC.position);
@@ -141,19 +174,42 @@ function setup() {
 function update() {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let newPos = getPlayerPos()
+    camOffset = camOffset.add(newPos.subtract(startPos));
+    startPos = new vec2(newPos.x, newPos.y);
+    updateEdge(edge.shape);
 
     physicSystem.step(timeStep);
 
-    for (let i = 0; i < bodies.length; ++i) {
+    for (let i = 0; i < bodies.length; ++i) 
+    {
         drawBody(bodies[i]);
     }
 
-    physicSystem.drawJoint();
-    if(showContacts)
-        physicSystem.drawManifolds();
-
+    ctx.strokeStyle = "#fff";
+    ctx.beginPath();
+    ctx.moveTo(tireA.position.x - camOffset.x, tireA.position.y - camOffset.y);
+    ctx.lineTo(tireB.position.x - camOffset.x, tireB.position.y - camOffset.y);
+    ctx.lineTo(tireC.position.x - camOffset.x, tireC.position.y - camOffset.y);
+    ctx.closePath();
+    ctx.stroke();
+    
     DrawDebugData(ctx);
     requestAnimationFrame(update);
 }
-
 setup();
+
+let slider = document.getElementById("subdivision");
+slider.value = xOffset;
+slider.oninput = function(evt)
+{
+    xOffset = evt.target.value;
+}
+
+let visible = document.getElementById("visible");
+visible.checked = showVertex;
+visible.oninput = function(evt)
+{
+    showVertex = evt.target.checked;
+    
+}

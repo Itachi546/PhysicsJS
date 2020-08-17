@@ -17,7 +17,8 @@ class Body
 
         this.color = color;
 
-        this.shape = undefined;
+        this.shape = null;
+        this.joint = null;
 
         // TODO to be implemented
         this.awake = true;

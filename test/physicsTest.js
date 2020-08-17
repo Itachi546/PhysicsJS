@@ -53,6 +53,7 @@ function clearGlobalStates()
 
 function createBox(position, dims, invMass, orientation) {
     let body = new Body(position, invMass);
+    
     body.orientation = orientation;
     body.initBox(dims.x, dims.y);
     bodies.push(body);
@@ -149,8 +150,24 @@ function pendulumScene() {
     a = createBox(new vec2(width * 0.5, height * 0.1), new vec2(20, 5), 0.0, 0.0);
     b = createBox(new vec2(width * 0.0, height * 0.1), new vec2(20, 20), 0.25, 0.0);
 
-    let joint = new DistanceJoint(a, b, a.position, b.position.add(new vec2(20.0, 20.0)));
+    let joint = new DistanceJoint(a, b, a.position, b.position.add(new vec2(20.0, 0.0)));
     physicSystem.addConstraints(joint);
+}
+
+function windMill()
+{
+    let c = createBox(new vec2(width * 0.5, height * 0.7), new vec2(3.0, 40.0), 0.0, 0);
+    let d = createBox(new vec2(width * 0.5, height * 0.63), new vec2(60.0, 3.0), 1.0, 0);
+    let joint = new DistanceJoint(c, d, d.position, d.position);
+    physicSystem.addConstraints(joint);
+
+    for(let i = 0; i < 10; ++i)
+    {
+        let x = (Math.random() * 2.0 - 1.0) * 60.0 + width * 0.5;
+        let y = height * 0.3 - i * 30.0;
+
+        createBox(new vec2(x, y), new vec2(10, 10), 1,0, 0.0);
+    }
 }
 
 function frictionScene() {
@@ -174,11 +191,6 @@ function frictionScene() {
             b.friction = i / 5.0;
         }
     }
-
-    let c = createCircle(new vec2(width * 0.75, height * 0.0), 10.0, 4.0, 0);
-    let d = createCircle(new vec2(width * 0.82, height * 0.0), 20.0, 4.0, 0);
-    let joint = new DistanceJoint(c, d, c.position, d.position);
-    physicSystem.addConstraints(joint);
     createObjects();
 }
 
@@ -188,7 +200,7 @@ function bridgeScene() {
     }
 
     let yPos = height * 0.4;
-    let start = createBox(new vec2(width * 0.1, yPos), new vec2(20, 10), 0.0, 0.0);
+    let start = createBox(new vec2(width * 0.1, yPos), new vec2(20, 5), 0.0, 0.0);
 
     let xOffset = 40.0;
     let numBody = Math.floor((0.8 * width) / xOffset);
@@ -196,7 +208,7 @@ function bridgeScene() {
         let invMass = 0.5;
         if (i === numBody - 1)
             invMass = 0.0;
-        let b = createBox(new vec2(width * 0.1 + xOffset * (i + 1), yPos), new vec2(20, 10), invMass, 0.0);
+        let b = createBox(new vec2(width * 0.1 + xOffset * (i + 1), yPos), new vec2(20, 5), invMass, 0.0);
         let anchorPoint = start.position.add(new vec2(20.0, 0.0));
         let joint = new DistanceJoint(start, b, anchorPoint, anchorPoint);
         physicSystem.addConstraints(joint);
@@ -206,7 +218,8 @@ function bridgeScene() {
 
 function setup() {
     physicSystem = new PhysicsSystem(new vec2(0.0, 98));
-    frictionScene();
+    windMill();
+    //frictionScene();
     update();
 }
 

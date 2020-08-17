@@ -1,3 +1,8 @@
+const JointType  = {
+    DISTANCE : "distance",
+    REVOLUTE : "revolute"
+}
+
 class DistanceJoint
 {
     constructor(a, b, anchorPointA, anchorPointB)
@@ -5,12 +10,16 @@ class DistanceJoint
         this.a = a;
         this.b = b;
 
+        a.joint = this;
+        b.joint = this;
+
+        this.type = JointType.DISTANCE;
         // Convert anchor to local space
         this.localAnchorA = mat2.rotate(-a.orientation).multiplyVec(anchorPointA.subtract(this.a.position));
         this.localAnchorB = mat2.rotate(-b.orientation).multiplyVec(anchorPointB.subtract(this.b.position));
 
         //this.softness = 0.0;
-        this.biasFactor = 0.2;
+        this.bias = 0.0;
 
         this.r1 = new vec2(0.0, 0.0);
         this.r2 = new vec2(0.0, 0.0);
@@ -41,8 +50,8 @@ class DistanceJoint
         this.constraintMass = this.a.inverseMass + this.b.inverseMass + 
                               this.a.inverseInertia * rn1 * rn1 + this.b.inverseInertia * rn2 * rn2;
 
-        const bias = 0.1;
-        this.bias = -bias * invDt * (newDist - this.distance);
+        const kBias = 0.01;
+        this.bias = -kBias * invDt * (newDist - this.distance);
     }
     
     applyImpulse()
@@ -63,3 +72,4 @@ class DistanceJoint
         
     }
 }
+

@@ -118,7 +118,9 @@ class Manifold {
     }
 
     applyImpulse() {
-        for (let i = 0; i < this.contacts.length; ++i) {
+
+        for (let i = 0; i < this.contacts.length; ++i) 
+        {
             let contact = this.contacts[i];
             let rA = contact.position.subtract(this.a.position);
             let rB = contact.position.subtract(this.b.position);

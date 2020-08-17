@@ -1,5 +1,7 @@
 class PhysicsSystem {
-    constructor(gravity) {
+    
+    constructor(gravity) 
+    {
         this.gravity = gravity;
         this.bodies = [];
         this.manifolds = [];
@@ -67,6 +69,12 @@ class PhysicsSystem {
             for (let j = i + 1; j < bodies.length; ++j) {
                 let bodyA = bodies[i];
                 let bodyB = bodies[j];
+
+                if(bodyA.joint !== null && bodyB.joint !== null)
+                {
+                    if(bodyA.joint === bodyB.joint)
+                        continue;
+                }
 
                 // @TODO uncomment it later
                 if(bodyA.inverseMass === 0 && bodyB.inverseMass === 0)

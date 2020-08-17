@@ -7,12 +7,25 @@
         {
             background-color: #000;
         }
+        .ui
+        {
+            padding:8px;
+            position: absolute;
+            top:10px;
+            left:810px;
+            color:#CCC;
+            background-color: #222;
+            outline:2px solid black;
+        }
     </style>
 </head>
 <body>
     <div>
         <canvas id="canvas" width = "800" height="600"></canvas>
         <div class = "ui">
+            <input type="range" min="10" max="150" id="subdivision">RelativeDistance</input>
+            <br>
+            <input type="checkbox" id="visible">Show Vertices</input>
         </div>
     </div>
     
