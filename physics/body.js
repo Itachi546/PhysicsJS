@@ -28,13 +28,26 @@ class Body
     {
         this.shape = new PolygonShape();
         this.shape.setAsBox(new vec2(width, height), this.orientation);
-        this.inverseInertia = 12.0 * this.inverseMass / (width * width + height * height);
+        //this.inverseInertia = 3.0 * this.inverseMass / (width * width + height * height);
     }
 
     initCircle(radius)
     {
         this.shape = new CircleShape(radius);
-        this.inverseInertia = (2.0 * this.inverseMass) /(radius * radius);
+        //this.inverseInertia = (2.0 * this.inverseMass) /(radius * radius);
+    }
+
+    calculateInertia()
+    {
+        if(this.shape.type === ShapeType.CIRCLE) 
+        {
+            this.inverseInertia = (2.0 * this.inverseMass) /(this.shape.radius * this.shape.radius);
+        }
+        else if(this.shape.type === ShapeType.POLYGON)
+        {
+            let inertia = calculateInertiaForConvexShape(this.shape.vertices);
+            this.inverseInertia = this.inverseMass * (1.0 /inertia);
+        }
     }
     
     clearForce()

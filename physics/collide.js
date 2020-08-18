@@ -7,12 +7,11 @@ function binarySearch(vertices, translate, value, start, end) {
     if (vertices[mid].x + translate.x < value) {
         return binarySearch(vertices, translate, value, mid, end);
     }
-    else if(vertices[mid].x + translate.x > value){
+    else if (vertices[mid].x + translate.x > value) {
         return binarySearch(vertices, translate, value, start, mid);
     }
-    else
-    {
-        return {start:mid, end:mid};
+    else {
+        return { start: mid, end: mid };
     }
 }
 
@@ -33,13 +32,11 @@ function CircleEdgeCollision(a, b, manifold) {
 
     let lines = binarySearch(vertices, p2, p1.x, 0, vertices.length - 1);
 
-    if(lines.start === lines.end)
-    {
+    if (lines.start === lines.end) {
         let ptOnEdge = vertices[lines.start].add(p2);
         let normal = ptOnEdge.subtract(p1);
         let len = vec2.length(normal);
-        if(len < radius)
-        {
+        if (len < radius) {
             let penetration = radius - len;
             normal = normal.scale(1.0 / len);
             let point = p1.add(normal.scale(penetration));
@@ -48,8 +45,7 @@ function CircleEdgeCollision(a, b, manifold) {
         }
         return false;
     }
-    else
-    {
+    else {
         let s = vertices[lines.start];
         let e = vertices[lines.end];
         let normal = new vec2(e.y - s.y, s.x - e.x);
@@ -57,8 +53,7 @@ function CircleEdgeCollision(a, b, manifold) {
 
         let ptOnLine = p2.add(e);
         let distance = vec2.dot(normal, p1.subtract(ptOnLine));
-        if (distance < radius && distance > 0.0) 
-        {
+        if (distance < radius && distance > 0.0) {
             normal = normal.scale(-1);
             let penetration = radius - distance;
             let point = p1.add(normal.scale(radius));
@@ -108,17 +103,28 @@ function BoxCircleCollision(a, b, manifold) {
 }
 
 function generateCollisionAxis(vertices, out_axis) {
-    let tl = vertices[0];
-    let tr = vertices[1];
-    let br = vertices[2];
-    let bl = vertices[3];
 
-    out_axis.push({ axis: vec2.normalize(tr.subtract(tl)), ptOnAxis: tr });
-    out_axis.push({ axis: vec2.normalize(br.subtract(tr)), ptOnAxis: br });
-    out_axis.push({ axis: vec2.normalize(bl.subtract(br)), ptOnAxis: bl });
-    out_axis.push({ axis: vec2.normalize(tl.subtract(bl)), ptOnAxis: tl });
+    let last = vertices.length;
+    let start = vertices[last - 1]
+    for (let i = 0; i < last; ++i) {
+        let end = vertices[i];
+        let edge = end.subtract(start);
+        let normal = new vec2(edge.y, -edge.x);
+        normal = vec2.normalize(normal);
+        out_axis.push({ axis: normal, ptOnAxis: start });
+        start = end;
+    }
+    /*
+        let tl = vertices[0];
+        let tr = vertices[1];
+        let br = vertices[2];
+        let bl = vertices[3];
 
-    return out_axis;
+        out_axis.push({ axis: vec2.normalize(tr.subtract(tl)), ptOnAxis: tr });
+        out_axis.push({ axis: vec2.normalize(br.subtract(tr)), ptOnAxis: br });
+        out_axis.push({ axis: vec2.normalize(bl.subtract(br)), ptOnAxis: bl });
+        out_axis.push({ axis: vec2.normalize(tl.subtract(bl)), ptOnAxis: tl });
+    */
 }
 
 function findIncidentReferenceFace(vertices, axes, normal) {
@@ -135,39 +141,43 @@ function findIncidentReferenceFace(vertices, axes, normal) {
     let out_incRefFace = axes[bestAxis];
     let out_vertices = [];
     let out_adjEdges = [];
+
+
+    let prev = (bestAxis === 0) ? (axes.length - 1) : (bestAxis - 1);
+    let next = (bestAxis + 1) % axes.length
+
+    out_vertices.push(vertices[bestAxis]);
+    out_vertices.push(vertices[prev]);
+
+    out_adjEdges.push(axes[prev]);
+    out_adjEdges.push(axes[next]);
+
     /*
-                  3
-        0   ------------- 1
-            -           -
-        2   -           -  0
-            -           -
-        2   ------------- 3
-                 1
+        if (bestAxis === 0) {
+            out_vertices.push(vertices[2]);
+            out_vertices.push(vertices[1]);
+            out_adjEdges.push(axes[3]);
+            out_adjEdges.push(axes[1]);
+        }
+        else if (bestAxis === 1) {
+            out_vertices.push(vertices[3]);
+            out_vertices.push(vertices[2]);
+            out_adjEdges.push(axes[2]);
+            out_adjEdges.push(axes[0]);
+        }
+        else if (bestAxis === 2) {
+            out_vertices.push(vertices[0]);
+            out_vertices.push(vertices[3]);
+            out_adjEdges.push(axes[3]);
+            out_adjEdges.push(axes[1]);
+        }
+        else if (bestAxis === 3) {
+            out_vertices.push(vertices[1]);
+            out_vertices.push(vertices[0]);
+            out_adjEdges.push(axes[2]);
+            out_adjEdges.push(axes[0]);
+        }
     */
-    if (bestAxis === 0) {
-        out_vertices.push(vertices[2]);
-        out_vertices.push(vertices[1]);
-        out_adjEdges.push(axes[3]);
-        out_adjEdges.push(axes[1]);
-    }
-    else if (bestAxis === 1) {
-        out_vertices.push(vertices[3]);
-        out_vertices.push(vertices[2]);
-        out_adjEdges.push(axes[2]);
-        out_adjEdges.push(axes[0]);
-    }
-    else if (bestAxis === 2) {
-        out_vertices.push(vertices[0]);
-        out_vertices.push(vertices[3]);
-        out_adjEdges.push(axes[3]);
-        out_adjEdges.push(axes[1]);
-    }
-    else if (bestAxis === 3) {
-        out_vertices.push(vertices[1]);
-        out_vertices.push(vertices[0]);
-        out_adjEdges.push(axes[2]);
-        out_adjEdges.push(axes[0]);
-    }
 
     return {
         face: out_incRefFace,
@@ -250,7 +260,6 @@ function BoxBoxCollision(a, b, manifold) {
             mtv = axis;
         }
     }
-
     let ba = b.position.subtract(a.position);
     if (ba.x === undefined || mtv === undefined)
         return;
@@ -296,7 +305,7 @@ function BoxBoxCollision(a, b, manifold) {
 
     manifold.incFaceStart = vertStart;
     manifold.incFaceEnd = vertEnd;
-    //console.log(vertStart, vertEnd);
+    
     manifold.refFaceStart = refFace.verts[0];
     manifold.refFaceEnd = refFace.verts[1];
 

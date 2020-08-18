@@ -56,6 +56,7 @@ function createBox(position, dims, invMass, orientation) {
     
     body.orientation = orientation;
     body.initBox(dims.x, dims.y);
+    body.calculateInertia();
     bodies.push(body);
     physicSystem.addBody(body)
     return body;
@@ -66,6 +67,7 @@ function createCircle(position, radius, invMass, orientation)
     let body = new Body(position, invMass);
     body.orientation = orientation;
     body.initCircle(radius);
+    body.calculateInertia();
     bodies.push(body);
     physicSystem.addBody(body)
     return body;
@@ -218,8 +220,7 @@ function bridgeScene() {
 
 function setup() {
     physicSystem = new PhysicsSystem(new vec2(0.0, 98));
-    windMill();
-    //frictionScene();
+    frictionScene();
     update();
 }
 

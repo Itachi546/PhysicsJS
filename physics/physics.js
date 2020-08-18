@@ -9,6 +9,7 @@ class PhysicsSystem {
     }
 
     step(dt) {
+
         this.broadPhase();
 
         let invDt = 1.0 / dt;
@@ -77,8 +78,8 @@ class PhysicsSystem {
                 }
 
                 // @TODO uncomment it later
-                if(bodyA.inverseMass === 0 && bodyB.inverseMass === 0)
-                    continue;
+                //if(bodyA.inverseMass === 0 && bodyB.inverseMass === 0)
+                //    continue;
                 
                 let shapeAType = bodyA.shape.type;
                 let shapeBType = bodyB.shape.type;

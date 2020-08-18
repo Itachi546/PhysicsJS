@@ -17,6 +17,7 @@ function createCircle(position, radius, invMass, orientation)
     let body = new Body(position, invMass);
     body.orientation = orientation;
     body.initCircle(radius);
+    body.calculateInertia();
     bodies.push(body);
     physicSystem.addBody(body)
     return body;
@@ -65,7 +66,6 @@ function drawCircle(body)
     let offset = camOffset.scale(-1);
     
     let radius = body.shape.radius;
-
     ctx.beginPath();
     ctx.strokeStyle = body.color;
     ctx.arc(position.x + offset.x, position.y + offset.y, radius, 0.0, Math.PI * 2.0);
