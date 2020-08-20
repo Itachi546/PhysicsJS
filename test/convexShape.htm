@@ -7,9 +7,31 @@
             {
                 background-color: #000;
             }
+            #ui
+            {
+                position: absolute;
+                background-color:#444;
+                color:#fff;
+                padding:10px;
+                top:10px;
+                left:510px;
+            }
+            #para
+            {
+                padding-bottom:5px;
+                margin-top:0px;
+                margin-bottom:0px;
+            }
     </style>
 </head>
+    <div>
     <canvas id="canvas" width="500" height="500"></canvas>
+    <div id="ui">
+        <p id="para">Controls</p>
+        <input id="showAABB" type="checkbox"> Show AABB </input><br>
+        <input id="showContacts" type="checkbox"> Show Contacts </input><br>
+    </div>
+    </div>
     <script src="../math/math.js"></script>
     <script src="../physics/debug.js"></script>
     <script src="../physics/shape.js"></script>
@@ -20,6 +42,5 @@
     <script src="../physics/physics.js"></script>
     <script src="convexShape.js"></script>
 <body>
-    
 </body>
 </html>

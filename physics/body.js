@@ -18,10 +18,25 @@ class Body
         this.color = color;
 
         this.shape = null;
-        this.joint = null;
+        this.joint = [];
 
         // TODO to be implemented
         this.awake = true;
+    }
+
+    calculateAABB()
+    {
+        return this.shape.calculateAABB(this.position, this.orientation);
+    }
+
+    isPartOfJoint(joint)
+    {
+        for(let i = 0; i < this.joint.length; ++i)
+        {
+            if(joint === this.joint[i])
+                return true;
+        }
+        return false;
     }
 
     initBox(width, height)

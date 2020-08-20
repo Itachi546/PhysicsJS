@@ -6,14 +6,14 @@ Learning 2D Collision and Rigid body physics using Javascript
 ### Collision Test
 ![Scene1](images/image1.PNG)
 
-### Joint
-![Joint](images/image2.PNG)
+### Joint1
+![Joint1](images/image2.PNG)
 
-### Pendulum
-![Pendulum](images/image3.png)
+### Joint2
+![Joint2](images/image3.png)
 
 ### Convex Shape
-![Pendulum](images/convexShape.png)
+![Convex](images/convexShape.png)
 
 ### Edge Shape Collider
-![Pendulum](images/edgeShape.png)
+![Edge](images/edgeShape.png)

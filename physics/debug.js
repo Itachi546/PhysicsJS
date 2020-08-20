@@ -26,7 +26,7 @@ function DrawDebugData(ctx)
         ctx.closePath();
         ctx.stroke();
     }
-
+    
     for(let i = 0; i < __debugPoints.length; ++i)
     {
         ctx.fillStyle = __debugPoints[i].color;

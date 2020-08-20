@@ -10,8 +10,8 @@ class DistanceJoint
         this.a = a;
         this.b = b;
 
-        a.joint = this;
-        b.joint = this;
+        a.joint.push(this);
+        b.joint.push(this);
 
         this.type = JointType.DISTANCE;
         // Convert anchor to local space
@@ -25,7 +25,6 @@ class DistanceJoint
         this.r2 = new vec2(0.0, 0.0);
 
         this.constraintMass = 0.0;
-
         this.distance = vec2.length(anchorPointB.subtract(anchorPointA));
     }
 

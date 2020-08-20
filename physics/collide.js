@@ -1,3 +1,18 @@
+function AABBOverlap(a, b)
+{
+    let minA = a.center.subtract(a.halfSize);
+    let maxB = b.center.add(b.halfSize);
+    if(minA.x > maxB.x && minA.y > maxB.y)
+        return false;
+    
+    let minB = b.center.subtract(b.halfSize);
+    let maxA = a.center.add(a.halfSize);
+    if(maxA.x < minB.x && maxA.y < minB.y)
+        return false;
+
+    return true;
+}
+
 function binarySearch(vertices, translate, value, start, end) {
     let mid = Math.ceil((start + end) / 2);
     if (end === start + 1) {
