@@ -146,11 +146,15 @@ class PhysicsSystem {
                 if (bodyA.inverseMass === 0 && bodyB.inverseMass === 0)
                     continue;
 
-                if(AABBOverlap(bodyA.calculateAABB(), bodyB.calculateAABB()))
-                {
-                    this.narrowPhase(bodyA, bodyB);
-                }
+                let bodyA_AABB = bodyA.calculateAABB()
+                let bodyB_AABB = bodyB.calculateAABB()
 
+                let overlap = true;
+                if(bodyA_AABB != null && bodyB_AABB != null)
+                {
+                    overlap = AABBOverlap(bodyA_AABB, bodyB_AABB);
+                }
+                this.narrowPhase(bodyA, bodyB);
             }
         }
     }
@@ -162,7 +166,8 @@ class PhysicsSystem {
     }
 
     drawJoint() {
-        for (let i = 0; i < this.constraints.length; ++i) {
+        for (let i = 0; i < this.constraints.length; ++i) 
+        {
             let start = this.constraints[i].a.position.add(this.constraints[i].r1);
             let end = this.constraints[i].b.position.add(this.constraints[i].r2);
             DrawLine(start, end);

@@ -7,6 +7,7 @@ let ctx = canvas.getContext("2d");
 
 let timeStep = 1.0 / 60.0;
 let physicSystem = new PhysicsSystem(new vec2(0.0, 98));
+
 let bodies = [];
 let controls = 
 {

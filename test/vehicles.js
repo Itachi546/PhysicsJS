@@ -114,12 +114,6 @@ function drawEdge(body)
     }
 }
 
-canvas.onmousedown = function(evt)
-{
-    if(evt.button === 0)
-        createCircle(new vec2(evt.clientX, evt.clientY), Math.random() * 10.0 + 10.0, 1.0, 0.0);
-}
-
 window.onkeydown = function(evt)
 {
     let force = new vec2(200.0, 0.0);

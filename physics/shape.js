@@ -120,4 +120,9 @@ class EdgeShape
     {
         this.vertices.push(vertex);
     }
+
+    calculateAABB(position, orientation)
+    {
+        return null;
+    }
 }
