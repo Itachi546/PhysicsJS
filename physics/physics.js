@@ -188,6 +188,18 @@ class PhysicsSystem {
         }
     }
 
+    removeBody(body)
+    {
+        for(let i = 0; i < this.bodies.length; ++i)
+        {
+            if(this.bodies[i] === body)
+                {
+                    this.bodies.splice(i, 1);
+                    return;
+                }
+        }
+    }
+
 
     findManifold(a, b) {
         for (let i = 0; i < this.manifolds.length; ++i) {

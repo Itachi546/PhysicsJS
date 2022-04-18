@@ -17,3 +17,6 @@ Learning 2D Collision and Rigid body physics using Javascript
 
 ### Edge Shape Collider
 ![Edge](images/edgeShape.png)
+
+### Slicing Rectangle 
+![Edge](images/slicing.png)
